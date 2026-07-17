@@ -11,9 +11,9 @@ const examples = [
 
 const progressSteps = [
   ['Understanding your project', 'Extracting the business, positioning and location'],
-  ['Reading the local signals', 'Calling the AskLizy location and review data'],
-  ['Calculating the KPIs', 'Applying the deterministic AskLizy scoring model'],
-  ['Selecting grounded insights', 'OpenRouter classifies the brief and selects allowlisted evidence codes'],
+  ['Reading the nearby places', 'Loading competitors, categories, ratings, reviews and operating data'],
+  ['Analysing the market', 'GPT-5.4 Mini compares the Places evidence with your concept'],
+  ['Checking the benchmark', 'Applying the deterministic AskLizy KPI score as a secondary check'],
 ]
 
 const verdictCopy = {
@@ -61,7 +61,7 @@ function ScoreRing({ score, verdict }) {
   const bounded = Math.max(0, Math.min(100, Number(score) || 0))
   const scoreColor = verdict === 'weak' ? '#c2414d' : verdict === 'mixed' ? '#b76e00' : verdict === 'strong' ? '#16875d' : '#315ef4'
   return (
-    <div className="score-ring" style={{ '--score': bounded, '--score-color': scoreColor }} aria-label={`AskLizy score ${bounded} out of 100, ${verdictCopy[verdict] || verdict}`}>
+    <div className="score-ring" style={{ '--score': bounded, '--score-color': scoreColor }} aria-label={`Location signal benchmark ${bounded} out of 100, ${verdictCopy[verdict] || verdict}`}>
       <div><strong>{bounded}</strong><span>/100</span></div>
     </div>
   )
@@ -107,7 +107,11 @@ function EvidencePanel({ result }) {
     <aside className="evidence-panel">
       <div className="panel-heading">
         <div><p className="eyebrow">Evidence</p><h2>How Nigi reached this conclusion</h2></div>
-        <span className="source-pill">AskLizy KPI engine</span>
+        <span className="source-pill">AskLizy KPI benchmark</span>
+      </div>
+      <div className="method-row">
+        <ScoreRing score={result.score} verdict={result.verdict} />
+        <span><b>Secondary benchmark only.</b> This fixed score checks digital density and activity signals; it does not determine the Places-led recommendation above.</span>
       </div>
       <div className="metric-grid">
         <Metric label="Established nearby places" value={metrics.activePoiCount} note="≥50 reviews · within 1 km" />
@@ -125,37 +129,68 @@ function EvidencePanel({ result }) {
   )
 }
 
+function PlacesIntelligencePanel({ intelligence }) {
+  return (
+    <section className="evidence-panel places-intelligence">
+      <div className="panel-heading">
+        <div><p className="eyebrow">Places intelligence</p><h2>{intelligence.headline}</h2></div>
+        <span className="source-pill">Places API + GPT-5.4</span>
+      </div>
+      <p className="method-disclaimer">{intelligence.summary}</p>
+      <div className="advice-grid">
+        <article className="advice-card">
+          <div className="advice-title"><span>◎</span><h3>Market patterns</h3></div>
+          <ul>{intelligence.marketPatterns.map((item) => <li key={item}>{item}</li>)}</ul>
+        </article>
+        <article className="advice-card">
+          <div className="advice-title"><span>↗</span><h3>Competitors to study</h3></div>
+          <ul>{intelligence.competitorHighlights.map((item) => <li key={item}>{item}</li>)}</ul>
+        </article>
+        <article className="advice-card">
+          <div className="advice-title"><span>◇</span><h3>Strategic opportunities</h3></div>
+          <ul>{intelligence.opportunities.map((item) => <li key={item}>{item}</li>)}</ul>
+        </article>
+      </div>
+      {intelligence.reviewThemes.length > 0 && (
+        <div className="method-row"><span><b>Review themes to investigate:</b> {intelligence.reviewThemes.join(' · ')}</span></div>
+      )}
+    </section>
+  )
+}
+
 function ResultView({ result, onReset }) {
   const report = result.report
+  const placeIntelligence = result.placeIntelligence
   return (
     <main className="result-shell">
       <section className="result-hero">
         <div className="result-copy">
           <div className="result-meta">
-            <span className={`verdict verdict-${result.verdict}`}>{verdictCopy[result.verdict] || result.verdict}</span>
-            <span>Confidence: {report.confidence}</span>
+            <span className="verdict">Places-led analysis</span>
+            <span>Places confidence: {placeIntelligence.confidence}</span>
           </div>
           <p className="eyebrow">Nigi’s assessment</p>
-          <h1>{report.headline}</h1>
-          <p className="result-summary">{report.summary}</p>
+          <h1>{placeIntelligence.headline}</h1>
+          <p className="result-summary">{placeIntelligence.summary}</p>
           <button className="secondary-button" type="button" onClick={onReset}>Analyse another location</button>
         </div>
-        <ScoreRing score={result.score} verdict={result.verdict} />
       </section>
 
       <MapPanel location={result.location} />
 
+      <PlacesIntelligencePanel intelligence={placeIntelligence} />
+
       <section className="advice-grid">
         <article className="advice-card strengths-card">
-          <div className="advice-title"><span>+</span><h2>Strengths</h2></div>
+          <div className="advice-title"><span>+</span><h2>KPI positives</h2></div>
           <ul>{report.strengths.map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
         <article className="advice-card risks-card">
-          <div className="advice-title"><span>!</span><h2>Risks</h2></div>
+          <div className="advice-title"><span>!</span><h2>KPI cautions</h2></div>
           <ul>{report.risks.map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
         <article className="advice-card next-card">
-          <div className="advice-title"><span>→</span><h2>What to do next</h2></div>
+          <div className="advice-title"><span>→</span><h2>Validation steps</h2></div>
           <ol>{report.nextSteps.map((item) => <li key={item}>{item}</li>)}</ol>
         </article>
       </section>
@@ -163,14 +198,14 @@ function ResultView({ result, onReset }) {
       <EvidencePanel result={result} />
 
       <section className="nearby-section">
-        <div className="panel-heading"><div><p className="eyebrow">Local context</p><h2>Most active nearby places</h2></div></div>
+        <div className="panel-heading"><div><p className="eyebrow">Local context</p><h2>Most reviewed nearby places</h2></div></div>
         {result.topPlaces.length ? (
           <div className="place-list">
             {result.topPlaces.map((place, index) => (
               <article className="place-row" key={`${place.name}-${index}`}>
                 <span className="place-index">{String(index + 1).padStart(2, '0')}</span>
                 <div><strong>{place.name}</strong><small>{place.distanceMeters} m away · {place.address}</small></div>
-                <div className="place-stats"><b>{place.rating ?? '—'} ★</b><span>{place.reviewCount.toLocaleString()} reviews</span></div>
+                <div className="place-stats"><b>{place.rating ?? '—'} ★</b><span>{Number(place.reviewCount || 0).toLocaleString()} reviews</span></div>
               </article>
             ))}
           </div>
@@ -203,7 +238,9 @@ export default function Home() {
     event.preventDefault()
     const message = query.trim()
     if (!message || loading) return
-    const fullQuery = context ? `${context}\nAdditional detail: ${message}` : message
+    const fullQuery = context
+      ? `Additional detail: ${message.slice(0, 1000)}\nOriginal request: ${context.slice(0, 900)}`
+      : message
     setLoading(true)
     setError('')
     setClarification('')
@@ -247,7 +284,7 @@ export default function Home() {
       <header className="topbar">
         <Link className="brand" href="/" aria-label="Nigi home"><LogoMark /><span>Nigi</span></Link>
         <div className="topbar-actions">
-          <span className="engine-badge"><i />Powered by AskLizy</span>
+          <span className="engine-badge"><i />Places API + GPT-5.4</span>
           <a href="#method">Method</a>
         </div>
       </header>
@@ -257,7 +294,7 @@ export default function Home() {
           <section className="hero-copy">
             <div className="hero-badge"><SparkIcon />Natural-language location intelligence</div>
             <h1>Know where your<br /><em>business belongs.</em></h1>
-            <p>Ask Nigi whether a commercial location fits your concept. Get a direct recommendation grounded in AskLizy’s deterministic KPIs—not an invented AI score.</p>
+            <p>Ask Nigi whether a commercial location fits your concept. GPT-5.4 Mini analyses nearby competitors, categories, ratings, reviews and operating signals from the Places API, with deterministic KPIs as a secondary check.</p>
           </section>
 
           <section className="prompt-card">
@@ -295,11 +332,11 @@ export default function Home() {
 
           {!loading && (
             <section className="method-section" id="method">
-              <div className="method-intro"><p className="eyebrow">Transparent by design</p><h2>AI classifies.<br />AskLizy calculates.</h2><p>Nigi separates language from evidence. OpenRouter classifies your brief and selects grounded, allowlisted insights; deterministic templates write the report, and the score comes from AskLizy’s fixed KPI model.</p></div>
+              <div className="method-intro"><p className="eyebrow">Transparent by design</p><h2>Places reveal.<br />GPT reasons.</h2><p>Nigi gives GPT-5.4 Mini structured evidence from the Places API—not a blank prompt. The model prioritises relevant competitors, market patterns and review themes, while fixed templates and deterministic KPI checks prevent invented numbers.</p></div>
               <div className="method-cards">
-                <article><span>01</span><h3>Understand</h3><p>Nigi identifies the business, positioning, audience and exact location.</p></article>
-                <article><span>02</span><h3>Measure</h3><p>AskLizy reads nearby active places, ratings, review depth and recent activity.</p></article>
-                <article><span>03</span><h3>Explain</h3><p>OpenRouter selects grounded insight codes. Nigi’s fixed templates turn them into strengths, risks and next steps.</p></article>
+                <article><span>01</span><h3>Collect</h3><p>Nigi loads nearby places, categories, distance, ratings, review volume, opening-hour availability and recent review excerpts.</p></article>
+                <article><span>02</span><h3>Reason</h3><p>GPT-5.4 Mini compares that evidence with your business type, positioning and target customer.</p></article>
+                <article><span>03</span><h3>Verify</h3><p>Evidence references, fixed templates and the AskLizy KPI benchmark keep the recommendation grounded.</p></article>
               </div>
             </section>
           )}
@@ -310,9 +347,9 @@ export default function Home() {
 
       <footer>
         <Link className="brand footer-brand" href="/"><LogoMark /><span>Nigi</span></Link>
-        <p>Location intelligence, explained. Powered by AskLizy KPIs and OpenRouter.</p>
+        <p>Location intelligence, explained. Places API evidence analysed by GPT-5.4 Mini.</p>
         <span>Decision support only · Verify before you sign</span>
-        <small>Your prompt is sent to OpenRouter; location and review queries are sent to the Maps Data provider. Result maps are loaded from OpenStreetMap. Nigi uses a signed usage cookie and a one-way hashed IP limiter, and does not require an account or save analysis history.</small>
+        <small>Your prompt and bounded review excerpts without reviewer profile fields are sent to OpenRouter; location and review queries are sent to the Maps Data provider. Result maps are loaded from OpenStreetMap. Nigi uses a signed usage cookie and a one-way hashed IP limiter, and does not require an account or save analysis history.</small>
       </footer>
     </div>
   )

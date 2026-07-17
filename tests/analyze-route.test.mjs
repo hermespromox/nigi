@@ -49,6 +49,32 @@ test('production rejects missing or non-canonical origins and malformed JSON is 
   assert.deepEqual(await malformed.json(), { error: 'The request body must be valid JSON.' })
 })
 
+test('oversized JSON is rejected by actual bytes even without a Content-Length header', async () => {
+  configure()
+  let calls = 0
+  globalThis.fetch = async () => { calls += 1; throw new Error('should not run') }
+  const oversized = request(JSON.stringify({ query: `bakery in Lyon ${'x'.repeat(17000)}` }), { ip: '203.0.113.45' })
+  oversized.headers.delete('content-length')
+  const response = await POST(oversized)
+  assert.equal(response.status, 413)
+  assert.equal(calls, 0)
+})
+
+test('blank provider coordinates are rejected instead of becoming zero-zero', async () => {
+  configure()
+  let call = 0
+  globalThis.fetch = async () => {
+    call += 1
+    if (call === 1) return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+      status: 'ready', businessType: 'bakery', positioning: 'premium', targetCustomer: 'locals', address: '18 rue de la République, Lyon', city: 'Lyon', country: 'fr',
+    }) } }] }), { status: 200 })
+    return new Response(JSON.stringify({ data: { lat: null, lng: '' } }), { status: 200 })
+  }
+  const response = await POST(request(JSON.stringify({ query: 'Premium bakery at 18 rue de la République, Lyon' }), { ip: '203.0.113.46' }))
+  assert.equal(response.status, 400)
+  assert.equal(call, 2)
+})
+
 test('secret preflight happens before fetch and returns no configuration details', async () => {
   configure()
   process.env.NIGI_COOKIE_SECRET = 'short'
@@ -76,6 +102,65 @@ test('request is charged before OpenRouter, max_tokens is set, and upstream deta
   assert.equal(openRouterBody.max_tokens, 300)
   assert.equal(JSON.parse(openRouterBody.messages[1].content).untrustedUserMessage, 'Would this address work for a bakery?')
   assert.doesNotMatch(JSON.stringify(payload), /SECRET_UPSTREAM_DETAIL/)
+})
+
+test('Places-first success path sends structured place evidence to GPT and hides raw review excerpts from clients', async () => {
+  configure()
+  const openRouterBodies = []
+  globalThis.fetch = async (url, options = {}) => {
+    const href = String(url)
+    if (href.includes('openrouter.ai')) {
+      const body = JSON.parse(options.body)
+      openRouterBodies.push(body)
+      if (openRouterBodies.length === 1) {
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+          address: '18 rue de la République, Lyon', businessType: 'premium bakery', positioning: 'premium', targetCustomer: 'local professionals', country: 'fr',
+        }) } }] }), { status: 200 })
+      }
+      return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+        marketPatternCodes: ['CLOSE_COMPETITION', 'UNEVEN_RATINGS'],
+        opportunityCodes: ['DIFFERENTIATION_ESSENTIAL', 'STUDY_REVIEW_THEMES'],
+        competitorPlaceIds: ['P1'],
+        reviewThemes: [{ code: 'SERVICE', placeIds: ['P1'] }],
+        strengthCodes: ['ESTABLISHED_PRESENCE'], riskCodes: ['INTENSE_COMPETITION'],
+        nextStepCodes: ['INSPECT_COMPETITORS'], confidence: 'medium-high',
+      }) } }] }), { status: 200 })
+    }
+    if (href.includes('/geocoding.php')) {
+      return new Response(JSON.stringify({ data: { lat: 45.764, lng: 4.8357, full_address: '18 Rue de la République, Lyon' } }), { status: 200 })
+    }
+    if (href.includes('/nearby.php')) {
+      return new Response(JSON.stringify({ data: [
+        { business_id: 'alpha', name: 'Maison Alpha', latitude: 45.765, longitude: 4.8357, rating: 4.8, review_count: 4100, full_address: '20 Rue de la République', types: ['bakery', 'cafe'], price_level: '$$$', working_hours: ['Monday: 08:00-19:00'] },
+        { business_id: 'beta', name: 'Boulangerie Beta', latitude: 45.768, longitude: 4.8357, rating: 3.9, review_count: 700, full_address: '30 Rue de la République', types: ['bakery'], price_level: '$$', working_hours: [] },
+      ] }), { status: 200 })
+    }
+    if (href.includes('/reviews.php')) {
+      const stale = new Date(Date.now() - 30 * 86400000).toISOString()
+      const future = new Date(Date.now() + 2 * 86400000).toISOString()
+      return new Response(JSON.stringify({ data: { reviews: [
+        { iso_date: new Date().toISOString(), review_rate: 5, review_text: 'Excellent croissants and friendly service.' },
+        { iso_date: stale, review_rate: 1, review_text: 'STALE_REVIEW_CANARY' },
+        { iso_date: future, review_rate: 5, review_text: 'FUTURE_REVIEW_CANARY' },
+      ] } }), { status: 200 })
+    }
+    throw new Error(`Unexpected fetch: ${href}`)
+  }
+
+  const response = await POST(request(JSON.stringify({ query: 'Would 18 rue de la République, Lyon work for a premium bakery?' }), { ip: '203.0.113.44' }))
+  const payload = await response.json()
+  assert.equal(response.status, 200)
+  assert.equal(payload.type, 'analysis')
+  assert.match(payload.placeIntelligence.headline, /premium bakery/i)
+  assert.match(payload.placeIntelligence.competitorHighlights[0], /Maison Alpha/)
+  assert.equal(openRouterBodies.length, 2)
+  const strategyEvidence = JSON.parse(openRouterBodies[1].messages[1].content).authoritativePlacesEvidence
+  assert.equal(strategyEvidence.businessContext.businessType, 'premium bakery')
+  assert.deepEqual(strategyEvidence.places[0].types, ['bakery', 'cafe'])
+  assert.match(strategyEvidence.places[0].recentReviewSnippets[0].text, /croissants/)
+  assert.equal(strategyEvidence.places[0].recentReviewSnippets.length, 1)
+  assert.doesNotMatch(JSON.stringify(strategyEvidence), /STALE_REVIEW_CANARY|FUTURE_REVIEW_CANARY/)
+  assert.doesNotMatch(JSON.stringify(payload), /croissants|STALE_REVIEW_CANARY|FUTURE_REVIEW_CANARY|recentReviewSnippets|workingHours/)
 })
 
 test('clarifications consume quota and only structured brief fields return', async () => {
