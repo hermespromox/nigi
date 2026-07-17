@@ -156,6 +156,7 @@ test('Places-first success path sends structured place evidence to GPT and hides
   assert.equal(payload.signals.estimatedDailyFootfall, 500)
   assert.deepEqual(Object.keys(payload).sort(), ['location', 'recommendations', 'signals', 'synthesis', 'type', 'usage'])
   assert.equal(openRouterBodies.length, 2)
+  assert.ok(openRouterBodies.every((body) => body.reasoning?.effort === 'medium'))
   const strategyEvidence = JSON.parse(openRouterBodies[1].messages[1].content).authoritativePlacesEvidence
   assert.equal(strategyEvidence.businessContext.businessType, 'premium bakery')
   assert.deepEqual(strategyEvidence.places[0].types, ['bakery', 'cafe'])

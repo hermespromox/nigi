@@ -116,7 +116,26 @@ function IntelligencePanel({ synthesis }) {
         </article>
       </div>
       {synthesis.reviewThemes.length > 0 && (
-        <div className="method-row"><span><b>Customer themes that can decide the outcome:</b> {synthesis.reviewThemes.join(' · ')}</span></div>
+        <section className="customer-themes">
+          <div className="customer-themes-heading">
+            <p className="eyebrow">Customer decision drivers</p>
+            <h3>What customers care about most</h3>
+            <p>These themes can shape preference, loyalty and word of mouth in this market.</p>
+          </div>
+          <div className="theme-grid">
+            {synthesis.reviewThemes.map((theme, index) => (
+              <article className="theme-card" key={theme.label}>
+                <span className="theme-index">{String(index + 1).padStart(2, '0')}</span>
+                <div>
+                  <h4>{theme.label}</h4>
+                  <div className="theme-businesses">
+                    {theme.businesses.map((business) => <span key={business}>{business}</span>)}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
     </section>
   )

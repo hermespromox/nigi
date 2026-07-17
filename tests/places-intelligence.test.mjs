@@ -159,6 +159,9 @@ test('buildPlacesIntelligence turns model selections into evidence-linked determ
   assert.match(intelligence.competitorHighlights[0], /Maison Alpha.*immediate competitor.*excellent customer standing.*entrenched market visibility/)
   assert.ok(intelligence.marketPatterns.some((item) => /direct competition is immediate/i.test(item)))
   assert.ok(intelligence.opportunities.some((item) => /differentiat/i.test(item)))
-  assert.match(intelligence.reviewThemes[0], /service.*Maison Alpha/i)
+  assert.deepEqual(intelligence.reviewThemes[0], {
+    label: 'Service',
+    businesses: ['Maison Alpha'],
+  })
   assert.doesNotMatch(JSON.stringify(intelligence), /footfall|sales forecast/i)
 })

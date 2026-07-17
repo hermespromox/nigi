@@ -73,13 +73,14 @@ async function openRouterJson(messages, apiKey, { temperature = 0, maxTokens = 3
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || 'openai/gpt-5.4-mini',
+        reasoning: { effort: 'medium' },
         temperature,
         max_tokens: maxTokens,
         response_format: { type: 'json_object' },
         messages,
       }),
       cache: 'no-store',
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(30000),
     })
   } catch (error) {
     throw new UpstreamError('OpenRouter request failed', { cause: error })

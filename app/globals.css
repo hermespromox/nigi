@@ -258,6 +258,16 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .method-row span { border: 1px solid var(--nigi-line); border-radius: 999px; padding: 8px 10px; color: var(--nigi-copy); font: 400 10px/1 var(--font-mono); }
 .method-row b { color: var(--nigi-navy); }
 .method-disclaimer { margin: 18px 0 0; padding-top: 17px; border-top: 1px solid var(--nigi-line); color: var(--nigi-copy); font: 400 11px/1.55 var(--font-mono); }
+.customer-themes { margin-top: 20px; padding: 26px; border: 1px solid #dbe4fb; border-radius: 14px; background: var(--nigi-pale); }
+.customer-themes-heading { max-width: 720px; }
+.customer-themes-heading h3 { margin: 5px 0 7px; font-size: 22px; letter-spacing: -.035em; }
+.customer-themes-heading > p:last-child { margin: 0; color: var(--nigi-copy); font-size: 13px; line-height: 1.55; }
+.theme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+.theme-card { display: grid; grid-template-columns: auto 1fr; gap: 13px; min-width: 0; padding: 17px; border: 1px solid var(--nigi-line); border-radius: 12px; background: #fff; }
+.theme-index { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 8px; color: var(--nigi-blue); background: #edf2ff; font: 600 10px/1 var(--font-mono); }
+.theme-card h4 { margin: 1px 0 7px; color: var(--nigi-navy); font-size: 15px; letter-spacing: -.02em; }
+.theme-businesses { display: flex; flex-wrap: wrap; gap: 6px; }
+.theme-businesses span { max-width: 100%; padding: 5px 8px; border-radius: 7px; color: var(--nigi-copy); background: #f4f6fa; font: 500 10px/1.35 var(--font-mono); white-space: nowrap; }
 .nearby-section .panel-heading { margin-bottom: 22px; }
 .place-list { display: grid; }
 .place-row { min-height: 78px; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 14px; border-top: 1px solid var(--nigi-line); }
@@ -329,6 +339,9 @@ footer > small { grid-column: 1 / -1; color: var(--nigi-copy); font: 400 11px/1.
   .evidence-panel, .nearby-section { padding: 24px 18px; }
   .panel-heading { flex-direction: column; }
   .metric-grid { grid-template-columns: 1fr; }
+  .theme-grid { grid-template-columns: 1fr; }
+  .customer-themes { padding: 22px 18px; }
+  .theme-businesses span { white-space: normal; }
   .metric-card { min-height: 115px; }
   .place-row { grid-template-columns: 30px 1fr; padding: 13px 0; }
   .place-stats { grid-column: 2; text-align: left; display: flex; align-items: center; gap: 9px; }
