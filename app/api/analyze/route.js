@@ -65,7 +65,7 @@ async function openRouterJson(messages, apiKey, { temperature = 0, maxTokens = 3
         'X-Title': 'Nigi',
       },
       body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || 'openai/gpt-4.1-mini',
+        model: process.env.OPENROUTER_MODEL || 'openai/gpt-5.4-mini',
         temperature,
         max_tokens: maxTokens,
         response_format: { type: 'json_object' },
