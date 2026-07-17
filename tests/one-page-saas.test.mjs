@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const pageSource = fs.readFileSync(new URL('../app/page.js', import.meta.url), 'utf8')
+const routeSource = fs.readFileSync(new URL('../app/api/analyze/route.js', import.meta.url), 'utf8')
 
 function sourcePosition(token) {
   const position = pageSource.indexOf(token)
@@ -34,6 +35,13 @@ test('homepage is a complete single-page SaaS journey', () => {
   for (const href of ['#product', '#how-it-works', '#use-cases', '#pricing', '#faq']) {
     assert.match(pageSource, new RegExp(`href="${href}"`))
   }
+})
+
+test('free plan and API allow fifty analyses per day', () => {
+  assert.match(pageSource, /Up to 50 analyses per day/)
+  assert.match(pageSource, /Up to 50 free analyses per day/)
+  assert.match(routeSource, /const DAILY_LIMIT = 50/)
+  assert.match(routeSource, /today’s 50 free analyses/)
 })
 
 test('pricing uses the confirmed three tiers and a real enquiry path', () => {

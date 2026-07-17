@@ -19,7 +19,7 @@ assert.match(page, /theme-grid/, 'Customer themes must use readable individual c
 assert.match(page, /Original request:/, 'Clarification answers must remain first while retaining bounded original context')
 assert.doesNotMatch(publicCopy, /AskLizy|GPT-5\.4|Places API|OpenRouter|Maps Data|How Nigi reached|Transparent by design|review-provider|analysis radius|sampled reviews/i, 'Public UI and metadata must not expose providers, models, formulas, thresholds, or methodology')
 assert.match(page, /No account required/, 'The no-Supabase MVP must be clear to users')
-assert.match(page, /Up to 20 free analyses per day/, 'The public offer must state the 20-analysis daily allowance')
+assert.match(page, /Up to 50 free analyses per day/, 'The public offer must state the 50-analysis daily allowance')
 assert.match(route, /OPENROUTER_API_KEY/, 'OpenRouter must be called server-side')
 assert.match(route, /RAPIDAPI_KEY/, 'AskLizy map data must be called server-side')
 assert.match(route, /calculateAskLizyScore/, 'The route must use deterministic AskLizy scoring')

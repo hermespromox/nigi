@@ -283,7 +283,7 @@ function PricingSection() {
         <article className="pricing-card">
           <div><span className="plan-name">Free</span><p>Explore individual opportunities.</p></div>
           <div className="price"><strong>€0</strong><span>forever</span></div>
-          <ul><li>Up to 20 analyses per day</li><li>Nigi location score</li><li>Market pulse and commercial synthesis</li><li>Nigi AI executive summary</li><li>PDF export</li></ul>
+          <ul><li>Up to 50 analyses per day</li><li>Nigi location score</li><li>Market pulse and commercial synthesis</li><li>Nigi AI executive summary</li><li>PDF export</li></ul>
           <a className="plan-cta secondary-plan-cta" href="#analyser">Analyse a location</a>
         </article>
         <article className="pricing-card featured-plan">
@@ -434,7 +434,7 @@ export default function Home() {
                 autoFocus
               />
               <div className="prompt-footer">
-                <span>{usage ? `${usage.remaining} free analyses remaining today` : 'Up to 20 free analyses per day · No signup'}</span>
+                <span>{usage ? `${usage.remaining} free analyses remaining today` : 'Up to 50 free analyses per day · No signup'}</span>
                 <button type="submit" disabled={loading || query.trim().length < 8}>Analyse a location <ArrowIcon /></button>
               </div>
             </form>

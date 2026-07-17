@@ -32,7 +32,7 @@ const REVIEWS_PER_PLACE_LIMIT = 20
 const REVIEW_WINDOW_DAYS = 7
 const ACTIVE_PLACE_MIN_REVIEWS = 50
 const ACTIVE_PLACE_DISTANCE_LIMIT_METERS = 1000
-const DAILY_LIMIT = 20
+const DAILY_LIMIT = 50
 const CONCURRENT_LIMIT = 6
 const USAGE_COOKIE = 'nigi_usage'
 
@@ -423,7 +423,7 @@ export async function POST(request) {
   const decision = usageDecision(current, today, DAILY_LIMIT)
   if (!decision.allowed) {
     reservation.release()
-    return NextResponse.json({ error: 'You have used today’s 20 free analyses. Please come back tomorrow.', limited: true }, { status: 429 })
+    return NextResponse.json({ error: 'You have used today’s 50 free analyses. Please come back tomorrow.', limited: true }, { status: 429 })
   }
 
   try {
