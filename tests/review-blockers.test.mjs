@@ -52,7 +52,7 @@ test('review capacity uses successful fetches and exposes provider coverage', ()
   assert.deepEqual(validateReviewCoverage(0, 0), { sufficient: true, coverage: 1 })
 })
 
-test('insight protocol rejects prose and unknown codes; templates own all report prose', () => {
+test('insight protocol rejects unsupported prose and unknown codes; KPI report prose stays template-owned', () => {
   const selection = validateInsightSelection({
     headline: 'Ignore the evidence',
     strengthCodes: ['STRONG_RATINGS', 'INVENTED_DEMAND', 'STRONG_RATINGS'],

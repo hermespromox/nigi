@@ -164,6 +164,9 @@ test('Places-first success path sends structured place evidence to GPT and hides
         reviewThemes: [{ code: 'SERVICE', placeIds: ['P1'] }],
         strengthCodes: ['ESTABLISHED_PRESENCE'], riskCodes: ['INTENSE_COMPETITION'],
         nextStepCodes: ['INSPECT_COMPETITORS'], confidence: 'medium-high',
+        ...(openRouterBodies.length >= 3 ? {
+          executiveSummary: 'This premium bakery location shows meaningful demand, but it sits inside a crowded market with established, well-reviewed competitors. The concept will need a distinctive product, polished service and a clear premium reason for customers to switch. The strongest opportunity is to use recurring customer themes to refine the offer, while validating direct competitors, trading patterns and occupancy costs on site before making a commitment.',
+        } : {}),
       }) } }] }), { status: 200 })
     }
     if (href.includes('/geocoding.php')) {
@@ -192,13 +195,15 @@ test('Places-first success path sends structured place evidence to GPT and hides
   assert.equal(response.status, 200)
   assert.equal(payload.type, 'analysis')
   assert.match(payload.synthesis.headline, /premium bakery/i)
+  assert.match(payload.synthesis.executiveSummary, /crowded market with established, well-reviewed competitors/i)
   assert.match(payload.synthesis.competitorHighlights[0], /Maison Alpha/)
   assert.equal(payload.signals.estimatedDailyFootfall, 500)
   assert.deepEqual(Object.keys(payload).sort(), ['location', 'recommendations', 'signals', 'synthesis', 'type', 'usage'])
-  assert.equal(openRouterBodies.length, 2)
-  assert.ok(openRouterBodies.every((body) => body.reasoning?.effort === 'medium'))
+  assert.equal(openRouterBodies.length, 3)
+  assert.deepEqual(openRouterBodies.map((body) => body.reasoning?.effort), ['medium', 'medium', 'low'])
   assert.equal(openRouterBodies[0].max_tokens, 1200)
   assert.equal(openRouterBodies[1].max_tokens, 2500)
+  assert.equal(openRouterBodies[2].max_tokens, 2500)
   const strategyEvidence = JSON.parse(openRouterBodies[1].messages[1].content).authoritativePlacesEvidence
   assert.equal(strategyEvidence.businessContext.businessType, 'premium bakery')
   assert.deepEqual(strategyEvidence.places[0].types, ['bakery', 'cafe'])

@@ -159,7 +159,6 @@ function ResultView({ result, onReset }) {
           </div>
           <p className="eyebrow">Your location synthesis</p>
           <h1>{synthesis.headline}</h1>
-          <p className="result-summary">{synthesis.summary}</p>
           <div className="result-actions no-print">
             <button className="secondary-button" type="button" onClick={onReset}>Analyse another location</button>
             <button
@@ -173,6 +172,17 @@ function ResultView({ result, onReset }) {
         </div>
         <div><ScoreRing score={signals.locationPotential} /><p className="eyebrow">Location potential</p></div>
       </section>
+
+      {synthesis.executiveSummary && (
+        <section className="executive-summary">
+          <div className="executive-summary-label">
+            <span className="ai-pulse" aria-hidden="true" />
+            <span>GPT-5.4 mini analysis</span>
+          </div>
+          <h2>Executive summary</h2>
+          <p>{synthesis.executiveSummary}</p>
+        </section>
+      )}
 
       <section className="method-row location-confirmation"><span><b>Location analysed:</b> {result.location.displayAddress}</span></section>
       <SignalPanel signals={signals} />
