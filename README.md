@@ -9,7 +9,7 @@ Nigi is a Places-first commercial location assistant. GPT-5.4 Mini analyses boun
 - Analyse nearby categories, distances, ratings, review volume, opening-hour data and bounded recent review excerpts
 - Use the same Maps Data / RapidAPI source and KPI weights as AskLizy for a secondary deterministic benchmark
 - Return Places-based market patterns, competitor highlights, opportunities, review themes, KPI evidence and a map
-- Anonymous limit of five requests per browser and best-effort hashed IP per UTC day
+- Anonymous limit of 20 requests per browser and best-effort hashed IP per UTC day
 - No Supabase, database, account or saved history
 
 ## Local setup

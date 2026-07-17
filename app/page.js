@@ -252,7 +252,7 @@ export default function Home() {
                 autoFocus
               />
               <div className="prompt-footer">
-                <span>{usage ? `${usage.remaining} free analyses remaining today` : '5 free analyses per day · No signup'}</span>
+                <span>{usage ? `${usage.remaining} free analyses remaining today` : 'Up to 20 free analyses per day · No signup'}</span>
                 <button type="submit" disabled={loading || query.trim().length < 8}>Analyse location <ArrowIcon /></button>
               </div>
             </form>
