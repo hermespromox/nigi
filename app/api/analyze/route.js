@@ -61,37 +61,48 @@ function cleanQuery(value) {
 }
 
 async function openRouterJson(messages, apiKey, { temperature = 0, maxTokens = 300 } = {}) {
-  let response
-  try {
-    response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NIGI_SITE_URL || 'http://localhost:3000',
-        'X-Title': 'Nigi',
-      },
-      body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || 'openai/gpt-5.4-mini',
-        reasoning: { effort: 'medium' },
-        temperature,
-        max_tokens: maxTokens,
-        response_format: { type: 'json_object' },
-        messages,
-      }),
-      cache: 'no-store',
-      signal: AbortSignal.timeout(30000),
-    })
-  } catch (error) {
-    throw new UpstreamError('OpenRouter request failed', { cause: error })
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let response
+    try {
+      response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.NIGI_SITE_URL || 'http://localhost:3000',
+          'X-Title': 'Nigi',
+        },
+        body: JSON.stringify({
+          model: process.env.OPENROUTER_MODEL || 'openai/gpt-5.4-mini',
+          reasoning: { effort: attempt === 0 ? 'medium' : 'low' },
+          temperature,
+          max_tokens: maxTokens,
+          response_format: { type: 'json_object' },
+          messages,
+        }),
+        cache: 'no-store',
+        signal: AbortSignal.timeout(30000),
+      })
+    } catch (error) {
+      if (attempt === 0) continue
+      throw new UpstreamError('OpenRouter request failed', { cause: error })
+    }
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      if (attempt === 0 && (response.status === 429 || response.status >= 500)) continue
+      throw new UpstreamError(`OpenRouter failed with status ${response.status}`)
+    }
+    const content = payload?.choices?.[0]?.message?.content
+    if (!content) {
+      if (attempt === 0) continue
+      throw new UpstreamError('OpenRouter returned no content')
+    }
+    try { return parseJsonObject(content) } catch (error) {
+      if (attempt === 0) continue
+      throw new UpstreamError('OpenRouter returned invalid structured output', { cause: error })
+    }
   }
-  const payload = await response.json().catch(() => ({}))
-  if (!response.ok) throw new UpstreamError(`OpenRouter failed with status ${response.status}`)
-  const content = payload?.choices?.[0]?.message?.content
-  if (!content) throw new UpstreamError('OpenRouter returned no content')
-  try { return parseJsonObject(content) } catch (error) {
-    throw new UpstreamError('OpenRouter returned invalid structured output', { cause: error })
-  }
+  throw new UpstreamError('OpenRouter request failed')
 }
 
 async function extractBrief(query, apiKey) {
@@ -126,11 +137,15 @@ async function rapid(path, params, apiKey) {
         signal: AbortSignal.timeout(10000),
       })
     } catch (error) {
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)))
+        continue
+      }
       throw new UpstreamError('Location provider request failed', { cause: error })
     }
     const payload = await response.json().catch(() => ({}))
     if (response.ok) return payload
-    if (response.status === 429 && attempt < 2) {
+    if ((response.status === 429 || response.status >= 500) && attempt < 2) {
       await new Promise((resolve) => setTimeout(resolve, 700 * (attempt + 1)))
       continue
     }

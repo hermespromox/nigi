@@ -104,6 +104,46 @@ test('request is charged before OpenRouter, max_tokens is set, and upstream deta
   assert.doesNotMatch(JSON.stringify(payload), /SECRET_UPSTREAM_DETAIL/)
 })
 
+test('retries once when OpenRouter returns no final content', async () => {
+  configure()
+  const openRouterBodies = []
+  globalThis.fetch = async (_url, options) => {
+    openRouterBodies.push(JSON.parse(options.body))
+    if (openRouterBodies.length === 1) {
+      return new Response(JSON.stringify({ choices: [{ message: { content: '' } }] }), { status: 200 })
+    }
+    return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+      address: '', businessType: 'bakery', country: 'fr',
+    }) } }] }), { status: 200 })
+  }
+
+  const response = await POST(request('{"query":"I want to open a bakery somewhere"}', { ip: '203.0.113.47' }))
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).type, 'clarification')
+  assert.equal(openRouterBodies.length, 2)
+  assert.equal(openRouterBodies[0].reasoning.effort, 'medium')
+  assert.equal(openRouterBodies[1].reasoning.effort, 'low')
+})
+
+test('retries a timed-out location-provider request', async () => {
+  configure()
+  let calls = 0
+  globalThis.fetch = async (url) => {
+    calls += 1
+    if (String(url).includes('openrouter.ai')) {
+      return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+        address: '18 rue de la République, Lyon', businessType: 'bakery', country: 'fr',
+      }) } }] }), { status: 200 })
+    }
+    if (calls === 2) throw new DOMException('The operation was aborted due to timeout', 'TimeoutError')
+    return new Response(JSON.stringify({ data: { lat: null, lng: '' } }), { status: 200 })
+  }
+
+  const response = await POST(request(JSON.stringify({ query: 'Premium bakery at 18 rue de la République, Lyon' }), { ip: '203.0.113.48' }))
+  assert.equal(response.status, 400)
+  assert.equal(calls, 3)
+})
+
 test('Places-first success path sends structured place evidence to GPT and hides raw review excerpts from clients', async () => {
   configure()
   const openRouterBodies = []
