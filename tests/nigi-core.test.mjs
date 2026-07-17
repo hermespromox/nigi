@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   calculateAskLizyScore,
   buildMetrics,
+  buildPublicSignals,
   normalizeBrief,
   parseJsonObject,
   verdictForScore,
@@ -22,7 +23,7 @@ test('AskLizy score preserves the existing KPI weights', () => {
   assert.equal(calculateAskLizyScore({ ...metrics, poiCount: 0 }), 88)
 })
 
-test('buildMetrics derives activity indicators without a visitors/day proxy', () => {
+test('buildMetrics preserves the AskLizy area-footfall estimate', () => {
   const metrics = buildMetrics({
     activePlaces: [
       { rating: 4.5, review_count: 100 },
@@ -39,7 +40,22 @@ test('buildMetrics derives activity indicators without a visitors/day proxy', ()
   assert.equal(metrics.reviewSampleCapacity, 40)
   assert.equal(metrics.activityIndex, 20)
   assert.equal(metrics.reviewCoverage, 100)
-  assert.equal('areaVisitorsPerDay' in metrics, false)
+  assert.equal(metrics.areaVisitorsPerDay, 1500)
+  assert.equal(metrics.reviewVelocity, 1.143)
+})
+
+test('buildPublicSignals exposes outcomes without exposing the calculation', () => {
+  assert.deepEqual(buildPublicSignals({
+    score: 72,
+    metrics: { areaVisitorsPerDay: 6500, activePoiCount: 28, activityIndex: 31, avgRating: 4.42 },
+  }), {
+    locationPotential: 72,
+    estimatedDailyFootfall: 6500,
+    commercialOutlook: 'Promising',
+    competitiveIntensity: 'Very high',
+    demandMomentum: 'Strong',
+    customerReputation: 4.42,
+  })
 })
 
 test('parseJsonObject accepts fenced OpenRouter JSON and rejects arrays', () => {

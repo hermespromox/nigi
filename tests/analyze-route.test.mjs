@@ -151,8 +151,10 @@ test('Places-first success path sends structured place evidence to GPT and hides
   const payload = await response.json()
   assert.equal(response.status, 200)
   assert.equal(payload.type, 'analysis')
-  assert.match(payload.placeIntelligence.headline, /premium bakery/i)
-  assert.match(payload.placeIntelligence.competitorHighlights[0], /Maison Alpha/)
+  assert.match(payload.synthesis.headline, /premium bakery/i)
+  assert.match(payload.synthesis.competitorHighlights[0], /Maison Alpha/)
+  assert.equal(payload.signals.estimatedDailyFootfall, 500)
+  assert.deepEqual(Object.keys(payload).sort(), ['location', 'recommendations', 'signals', 'synthesis', 'type', 'usage'])
   assert.equal(openRouterBodies.length, 2)
   const strategyEvidence = JSON.parse(openRouterBodies[1].messages[1].content).authoritativePlacesEvidence
   assert.equal(strategyEvidence.businessContext.businessType, 'premium bakery')
@@ -160,7 +162,7 @@ test('Places-first success path sends structured place evidence to GPT and hides
   assert.match(strategyEvidence.places[0].recentReviewSnippets[0].text, /croissants/)
   assert.equal(strategyEvidence.places[0].recentReviewSnippets.length, 1)
   assert.doesNotMatch(JSON.stringify(strategyEvidence), /STALE_REVIEW_CANARY|FUTURE_REVIEW_CANARY/)
-  assert.doesNotMatch(JSON.stringify(payload), /croissants|STALE_REVIEW_CANARY|FUTURE_REVIEW_CANARY|recentReviewSnippets|workingHours/)
+  assert.doesNotMatch(JSON.stringify(payload), /croissants|STALE_REVIEW_CANARY|FUTURE_REVIEW_CANARY|recentReviewSnippets|workingHours|AskLizy|GPT|Places API|RapidAPI|OpenRouter|activityIndex|reviewCoverage|radiusMeters|reviewWindow|rawPoiCount|distanceMeters|reviewCount|4,100|120 m|rated 4\.80/i)
 })
 
 test('clarifications consume quota and only structured brief fields return', async () => {

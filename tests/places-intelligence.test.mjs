@@ -155,9 +155,9 @@ test('buildPlacesIntelligence turns model selections into evidence-linked determ
   })
 
   assert.match(intelligence.headline, /premium bakery/i)
-  assert.match(intelligence.summary, /12 established matching places/i)
-  assert.match(intelligence.competitorHighlights[0], /Maison Alpha.*120 m.*4\.80\/5.*4,100 reviews/)
-  assert.ok(intelligence.marketPatterns.some((item) => /120 m/i.test(item)))
+  assert.match(intelligence.summary, /competitive local market with strong demand momentum/i)
+  assert.match(intelligence.competitorHighlights[0], /Maison Alpha.*immediate competitor.*excellent customer standing.*entrenched market visibility/)
+  assert.ok(intelligence.marketPatterns.some((item) => /direct competition is immediate/i.test(item)))
   assert.ok(intelligence.opportunities.some((item) => /differentiat/i.test(item)))
   assert.match(intelligence.reviewThemes[0], /service.*Maison Alpha/i)
   assert.doesNotMatch(JSON.stringify(intelligence), /footfall|sales forecast/i)

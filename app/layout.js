@@ -3,17 +3,17 @@ import './globals.css'
 export const metadata = {
   metadataBase: new URL(process.env.NIGI_SITE_URL || 'https://nigi.vercel.app'),
   title: 'Nigi — Know where your business belongs',
-  description: 'Ask a natural-language question about a commercial location. Nigi uses GPT-5.4 Mini to analyse Places API competitors, reviews and market signals.',
+  description: 'Turn any commercial address into a decision-ready synthesis of footfall, demand, competition and opportunity.',
   openGraph: {
-    title: 'Nigi — Location intelligence, explained',
-    description: 'Ask whether a location fits your business and get a Places-first competitor and market analysis.',
+    title: 'Nigi — Know where your business belongs',
+    description: 'A proprietary commercial synthesis for the location and concept you are considering.',
     type: 'website',
     siteName: 'Nigi',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Nigi — Know where your business belongs',
-    description: 'Places-first location intelligence analysed by GPT-5.4 Mini.',
+    description: 'Footfall, demand, competition and opportunity—distilled into one clear decision.',
   },
   icons: { icon: '/icon.svg' },
 }

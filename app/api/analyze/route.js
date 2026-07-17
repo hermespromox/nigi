@@ -4,6 +4,7 @@ import {
   buildMetrics,
   buildPlacesEvidence,
   buildPlacesIntelligence,
+  buildPublicSignals,
   addressHasPromptProvenance,
   calculateAskLizyScore,
   normalizeBrief,
@@ -410,26 +411,15 @@ export async function POST(request) {
     const analysis = await analyzeLocation(brief, config.rapidApiKey)
     const selection = await selectPlacesStrategy(brief, analysis, config.openRouterKey)
     const report = buildDeterministicReport(analysis, selection.kpiSelection)
-    const placeIntelligence = buildPlacesIntelligence(brief, selection.placesEvidence, selection.placesStrategy)
-    const publicTopPlaces = analysis.topPlaces.map(({ recentReviewSnippets, workingHours, ...place }) => place)
+    const synthesis = buildPlacesIntelligence(brief, selection.placesEvidence, selection.placesStrategy)
     return jsonWithUsage({
       type: 'analysis',
-      brief,
-      location: { displayAddress: analysis.displayAddress, coordinates: analysis.coordinates },
-      score: analysis.score,
-      verdict: analysis.verdict,
-      metrics: analysis.metrics,
-      topPlaces: publicTopPlaces,
-      placeIntelligence,
-      report,
-      methodology: {
-        source: 'Places API evidence analysed by GPT-5.4 Mini',
-        benchmark: 'AskLizy deterministic KPI score',
-        radiusMeters: ACTIVE_PLACE_DISTANCE_LIMIT_METERS,
-        minimumReviewsPerPlace: ACTIVE_PLACE_MIN_REVIEWS,
-        reviewWindowDays: REVIEW_WINDOW_DAYS,
-        reviewCoverage: analysis.metrics.reviewCoverage,
-        disclaimer: 'Indicators use nearby place, rating and review-activity signals—not measured visits or sales. Verify the site, costs and local conditions before committing.',
+      location: { displayAddress: analysis.displayAddress },
+      signals: buildPublicSignals(analysis),
+      synthesis,
+      recommendations: {
+        priorities: synthesis.opportunities,
+        nextMoves: report.nextSteps,
       },
     }, 200, decision, config.cookieSecret, today)
   } catch (error) {
