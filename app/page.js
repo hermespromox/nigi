@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import { exportVisualPdf } from '../lib/pdf-export.mjs'
 
 const examples = [
   'Would 18 rue de la République in Lyon work for a premium bakery?',
@@ -34,6 +35,10 @@ function ArrowIcon() {
 
 function SparkIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.3 4.2L17 9l-3.7 1.8L12 15l-1.3-4.2L7 9l3.7-1.8L12 3Z" /><path d="m18.5 14 .7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7.7-2.3Z" /></svg>
+}
+
+function PdfIcon() {
+  return <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 2.5h5l3 3V17.5H6z" /><path d="M11 2.5v3h3M8 10h4M8 13h4" /></svg>
 }
 
 function Metric({ label, value, note }) {
@@ -145,7 +150,7 @@ function ResultView({ result, onReset }) {
   const synthesis = result.synthesis
   const signals = result.signals
   return (
-    <main className="result-shell">
+    <main className="result-shell pdf-report">
       <section className="result-hero">
         <div className="result-copy">
           <div className="result-meta">
@@ -155,7 +160,16 @@ function ResultView({ result, onReset }) {
           <p className="eyebrow">Your location synthesis</p>
           <h1>{synthesis.headline}</h1>
           <p className="result-summary">{synthesis.summary}</p>
-          <button className="secondary-button" type="button" onClick={onReset}>Analyse another location</button>
+          <div className="result-actions no-print">
+            <button className="secondary-button" type="button" onClick={onReset}>Analyse another location</button>
+            <button
+              className="secondary-button export-button"
+              type="button"
+              onClick={() => exportVisualPdf({ locationLabel: result.location.displayAddress })}
+            >
+              <PdfIcon />Export PDF
+            </button>
+          </div>
         </div>
         <div><ScoreRing score={signals.locationPotential} /><p className="eyebrow">Location potential</p></div>
       </section>

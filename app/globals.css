@@ -215,6 +215,10 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .result-summary { margin: 22px 0 26px; max-width: 760px; color: var(--nigi-copy); font-size: 17px; line-height: 1.65; }
 .secondary-button { color: var(--nigi-blue); border: 1px solid #c6d3fb; background: #fff; box-shadow: none; }
 .secondary-button:hover { border-color: var(--nigi-blue); background: #f9fbff; }
+.result-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.export-button { color: #fff; border-color: var(--nigi-blue); background: var(--nigi-blue); box-shadow: 0 5px 14px rgba(49, 94, 244, .18); }
+.export-button:hover { color: #fff; border-color: var(--nigi-blue-dark); background: var(--nigi-blue-dark); }
+.export-button svg { width: 17px; height: 17px; }
 .score-ring { --score: 0; --score-color: var(--nigi-blue); width: 190px; height: 190px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--score-color) calc(var(--score) * 1%), #dfe7f5 0); position: relative; box-shadow: 0 14px 35px rgba(49, 94, 244, .12); }
 .score-ring::before { content: ''; position: absolute; inset: 13px; border-radius: inherit; background: var(--nigi-pale); }
 .score-ring > div { position: relative; display: flex; align-items: baseline; }
@@ -346,4 +350,58 @@ footer > small { grid-column: 1 / -1; color: var(--nigi-copy); font: 400 11px/1.
   .place-row { grid-template-columns: 30px 1fr; padding: 13px 0; }
   .place-stats { grid-column: 2; text-align: left; display: flex; align-items: center; gap: 9px; }
   .place-stats span { margin: 0; }
+}
+
+@page { size: A4 portrait; margin: 10mm; }
+@media print {
+  html.pdf-export-mode,
+  html.pdf-export-mode body { background: #fff !important; }
+  html.pdf-export-mode body * { visibility: hidden !important; }
+  html.pdf-export-mode .pdf-report,
+  html.pdf-export-mode .pdf-report * { visibility: visible !important; }
+  html.pdf-export-mode .pdf-report {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    color: var(--nigi-navy);
+  }
+  html.pdf-export-mode .no-print { display: none !important; }
+  html.pdf-export-mode .pdf-report,
+  html.pdf-export-mode .pdf-report * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  html.pdf-export-mode .result-hero {
+    min-height: 0;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    padding: 30px;
+    break-inside: avoid;
+  }
+  html.pdf-export-mode .result-copy h1 { font-size: 40px; }
+  html.pdf-export-mode .result-summary { font-size: 13px; line-height: 1.5; margin: 14px 0 18px; }
+  html.pdf-export-mode .score-ring { width: 130px; height: 130px; }
+  html.pdf-export-mode .score-ring strong { font-size: 40px; }
+  html.pdf-export-mode .evidence-panel,
+  html.pdf-export-mode .nearby-section { padding: 22px; }
+  html.pdf-export-mode .panel-heading { flex-direction: row; }
+  html.pdf-export-mode .panel-heading h2,
+  html.pdf-export-mode .nearby-section h2 { font-size: 22px; }
+  html.pdf-export-mode .metric-grid { grid-template-columns: repeat(4, 1fr); margin-top: 18px; }
+  html.pdf-export-mode .metric-card { min-height: 100px; padding: 12px; break-inside: avoid; }
+  html.pdf-export-mode .metric-card strong { font-size: 21px; }
+  html.pdf-export-mode .advice-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  html.pdf-export-mode .advice-card { min-height: 0; padding: 18px; break-inside: avoid; }
+  html.pdf-export-mode .full-width-card { grid-column: 1 / -1; }
+  html.pdf-export-mode .full-width-card ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html.pdf-export-mode .advice-title { margin-bottom: 18px; }
+  html.pdf-export-mode .advice-card li { font-size: 10px; line-height: 1.45; }
+  html.pdf-export-mode .theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html.pdf-export-mode .theme-card,
+  html.pdf-export-mode .place-row { break-inside: avoid; }
+  html.pdf-export-mode .customer-themes { padding: 18px; }
+  html.pdf-export-mode .method-disclaimer { font-size: 9px; }
 }
