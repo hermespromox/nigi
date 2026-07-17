@@ -14,7 +14,7 @@ test('GPT executive summary is validated as bounded prose', () => {
   assert.ok(validateExecutiveSummary(`Evidence says ${'focus on differentiation '.repeat(100)}`).split(/\s+/).length <= 180)
 })
 
-test('result page renders the GPT-5.4 mini executive summary immediately after the score hero', () => {
+test('result page renders the Nigi AI executive summary immediately after the score hero', () => {
   const scoreHero = page.indexOf('<section className="result-hero">')
   const heroEnd = page.indexOf('</section>', scoreHero)
   const summary = page.indexOf('className="executive-summary"')
@@ -23,6 +23,7 @@ test('result page renders the GPT-5.4 mini executive summary immediately after t
   assert.ok(scoreHero >= 0)
   assert.ok(summary > heroEnd, 'executive summary must appear after the score hero')
   assert.ok(summary < marketSignals, 'executive summary must appear before detailed market signals')
-  assert.match(page, /GPT-5\.4 mini analysis/)
+  assert.match(page, /Nigi AI analysis/)
+  assert.doesNotMatch(page, /GPT-5\.4 mini analysis/i)
   assert.match(page, /synthesis\.executiveSummary/)
 })

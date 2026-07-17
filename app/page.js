@@ -177,7 +177,7 @@ function ResultView({ result, onReset }) {
         <section className="executive-summary">
           <div className="executive-summary-label">
             <span className="ai-pulse" aria-hidden="true" />
-            <span>GPT-5.4 mini analysis</span>
+            <span>Nigi AI analysis</span>
           </div>
           <h2>Executive summary</h2>
           <p>{synthesis.executiveSummary}</p>
