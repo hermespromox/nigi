@@ -99,7 +99,7 @@ test('request is charged before OpenRouter, max_tokens is set, and upstream deta
   assert.equal(payload.error, 'Nigi could not reach a required analysis service. Please try again later.')
   assert.equal(payload.usage.remaining, 19)
   assert.match(response.headers.get('set-cookie') || '', /nigi_usage=/)
-  assert.equal(openRouterBody.max_tokens, 300)
+  assert.equal(openRouterBody.max_tokens, 1200)
   assert.equal(JSON.parse(openRouterBody.messages[1].content).untrustedUserMessage, 'Would this address work for a bakery?')
   assert.doesNotMatch(JSON.stringify(payload), /SECRET_UPSTREAM_DETAIL/)
 })
@@ -157,6 +157,8 @@ test('Places-first success path sends structured place evidence to GPT and hides
   assert.deepEqual(Object.keys(payload).sort(), ['location', 'recommendations', 'signals', 'synthesis', 'type', 'usage'])
   assert.equal(openRouterBodies.length, 2)
   assert.ok(openRouterBodies.every((body) => body.reasoning?.effort === 'medium'))
+  assert.equal(openRouterBodies[0].max_tokens, 1200)
+  assert.equal(openRouterBodies[1].max_tokens, 2500)
   const strategyEvidence = JSON.parse(openRouterBodies[1].messages[1].content).authoritativePlacesEvidence
   assert.equal(strategyEvidence.businessContext.businessType, 'premium bakery')
   assert.deepEqual(strategyEvidence.places[0].types, ['bakery', 'cafe'])
@@ -170,7 +172,7 @@ test('clarifications consume quota and only structured brief fields return', asy
   configure()
   globalThis.fetch = async (_url, options) => {
     const body = JSON.parse(options.body)
-    assert.equal(body.max_tokens, 300)
+    assert.equal(body.max_tokens, 1200)
     return new Response(JSON.stringify({
       choices: [{ message: { content: JSON.stringify({ address: '', businessType: 'bakery', country: 'fr' }) } }],
     }), { status: 200 })
