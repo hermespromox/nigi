@@ -108,15 +108,15 @@ function IntelligencePanel({ synthesis }) {
       <p className="result-summary">{synthesis.summary}</p>
       <div className="advice-grid">
         <article className="advice-card">
-          <div className="advice-title"><span>◎</span><h3>Market reality</h3></div>
+          <div className="advice-title"><span className="material-symbols-rounded" aria-hidden="true">monitoring</span><h3>Market reality</h3></div>
           <ul>{synthesis.marketPatterns.map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
         <article className="advice-card">
-          <div className="advice-title"><span>↗</span><h3>Competitors that matter</h3></div>
+          <div className="advice-title"><span className="material-symbols-rounded" aria-hidden="true">storefront</span><h3>Competitors that matter</h3></div>
           <ul>{synthesis.competitorHighlights.map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
         <article className="advice-card">
-          <div className="advice-title"><span>◇</span><h3>Where the opportunity is</h3></div>
+          <div className="advice-title"><span className="material-symbols-rounded" aria-hidden="true">lightbulb</span><h3>Where the opportunity is</h3></div>
           <ul>{synthesis.opportunities.map((item) => <li key={item}>{item}</li>)}</ul>
         </article>
       </div>
@@ -190,7 +190,7 @@ function ResultView({ result, onReset }) {
 
       <section className="advice-grid">
         <article className="advice-card next-card full-width-card">
-          <div className="advice-title"><span>→</span><h2>Your next moves</h2></div>
+          <div className="advice-title"><span className="material-symbols-rounded" aria-hidden="true">route</span><h2>Your next moves</h2></div>
           <ol>{result.recommendations.nextMoves.map((item) => <li key={item}>{item}</li>)}</ol>
         </article>
       </section>
